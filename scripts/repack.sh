@@ -2,66 +2,38 @@
 
 set -e
 
-echo "Preparando ferramentas..."
+echo "Baixando Magisk APK oficial..."
 
-# 🔥 instala deps básicas
-sudo apt update
-sudo apt install -y git build-essential
+# 🔥 baixa APK da release mais recente
+curl -L -o magisk.apk https://github.com/topjohnwu/Magisk/releases/latest/download/Magisk.apk
 
-# 🔥 se não tiver unpackbootimg, compila
-if ! command -v unpackbootimg &> /dev/null
-then
-    echo "unpackbootimg não encontrado, compilando..."
+echo "Extraindo magiskboot..."
 
-    git clone https://github.com/anestisb/android-unpackbootimg.git tools_unpack
-    cd tools_unpack
+# extrai o binário correto
+unzip -j magisk.apk "lib/x86_64/libmagiskboot.so" -d .
 
-    make
-
-    cp unpackbootimg ../
-    cp mkbootimg ../
-
-    cd ..
-fi
+# renomeia
+mv libmagiskboot.so magiskboot
+chmod +x magiskboot
 
 echo "Extraindo boot.img..."
 
-mkdir -p work
-cd work
-
-../unpackbootimg -i ../boot.img
-
-echo "Arquivos extraídos:"
-ls
-
-# detecta nomes automaticamente
-RAMDISK=$(ls *ramdisk* 2>/dev/null | head -n1)
-CMDLINE=$(cat *cmdline*)
-BASE=$(cat *base*)
-PAGESIZE=$(cat *pagesize*)
-
-echo "Ramdisk: $RAMDISK"
+./magiskboot unpack boot.img
 
 echo "Substituindo kernel..."
 
-if [ -f ../kernel/out/arch/arm64/boot/Image.gz-dtb ]; then
-    cp ../kernel/out/arch/arm64/boot/Image.gz-dtb kernel
-elif [ -f ../kernel/out/arch/arm64/boot/Image.gz ]; then
-    cp ../kernel/out/arch/arm64/boot/Image.gz kernel
+if [ -f kernel/out/arch/arm64/boot/Image.gz-dtb ]; then
+    cp kernel/out/arch/arm64/boot/Image.gz-dtb kernel
+elif [ -f kernel/out/arch/arm64/boot/Image.gz ]; then
+    cp kernel/out/arch/arm64/boot/Image.gz kernel
 else
-    cp ../kernel/out/arch/arm64/boot/Image kernel
+    cp kernel/out/arch/arm64/boot/Image kernel
 fi
 
-echo "Reempacotando boot..."
+echo "Reempacotando..."
 
-../mkbootimg \
-  --kernel kernel \
-  --ramdisk "$RAMDISK" \
-  --cmdline "$CMDLINE" \
-  --base "$BASE" \
-  --pagesize "$PAGESIZE" \
-  -o ../droidspaces_boot.img
+./magiskboot repack boot.img
 
-cd ..
+mv new-boot.img droidspaces_boot.img
 
 echo "PRONTO ✅ droidspaces_boot.img gerado"
