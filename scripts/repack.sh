@@ -2,20 +2,45 @@
 
 set -e
 
-echo "Instalando magiskboot via pacote..."
+echo "Preparando ferramentas..."
 
-# usa binário confiável (mbtool inclui magiskboot compatível)
+# 🔥 instala deps básicas
 sudo apt update
-sudo apt install -y android-sdk-libsparse-utils
+sudo apt install -y git build-essential
 
-# fallback: usar avbtool + unpack manual (mais estável)
-echo "Usando método alternativo (unpack direto)..."
+# 🔥 se não tiver unpackbootimg, compila
+if ! command -v unpackbootimg &> /dev/null
+then
+    echo "unpackbootimg não encontrado, compilando..."
 
-mkdir work
+    git clone https://github.com/anestisb/android-unpackbootimg.git tools_unpack
+    cd tools_unpack
+
+    make
+
+    cp unpackbootimg ../
+    cp mkbootimg ../
+
+    cd ..
+fi
+
+echo "Extraindo boot.img..."
+
+mkdir -p work
 cd work
 
-# extrai boot com unpackbootimg (já vem no sistema)
-unpackbootimg -i ../boot.img
+../unpackbootimg -i ../boot.img
+
+echo "Arquivos extraídos:"
+ls
+
+# detecta nomes automaticamente
+RAMDISK=$(ls *ramdisk* 2>/dev/null | head -n1)
+CMDLINE=$(cat *cmdline*)
+BASE=$(cat *base*)
+PAGESIZE=$(cat *pagesize*)
+
+echo "Ramdisk: $RAMDISK"
 
 echo "Substituindo kernel..."
 
@@ -29,14 +54,14 @@ fi
 
 echo "Reempacotando boot..."
 
-mkbootimg \
+../mkbootimg \
   --kernel kernel \
-  --ramdisk boot.img-ramdisk.gz \
-  --cmdline "$(cat boot.img-cmdline)" \
-  --base "$(cat boot.img-base)" \
-  --pagesize "$(cat boot.img-pagesize)" \
+  --ramdisk "$RAMDISK" \
+  --cmdline "$CMDLINE" \
+  --base "$BASE" \
+  --pagesize "$PAGESIZE" \
   -o ../droidspaces_boot.img
 
 cd ..
 
-echo "PRONTO ✅"
+echo "PRONTO ✅ droidspaces_boot.img gerado"
