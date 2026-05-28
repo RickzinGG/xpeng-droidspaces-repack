@@ -2,31 +2,41 @@
 
 set -e
 
-echo "Baixando magiskboot..."
+echo "Instalando magiskboot via pacote..."
 
-# ✅ baixa binário correto (fixo)
-curl -L -o magiskboot https://raw.githubusercontent.com/chenxiaolong/DualBootPatcher/master/prebuilts/magiskboot/x86_64/magiskboot
+# usa binário confiável (mbtool inclui magiskboot compatível)
+sudo apt update
+sudo apt install -y android-sdk-libsparse-utils
 
-chmod +x magiskboot
+# fallback: usar avbtool + unpack manual (mais estável)
+echo "Usando método alternativo (unpack direto)..."
 
-echo "Extraindo boot.img..."
+mkdir work
+cd work
 
-./magiskboot unpack boot.img
+# extrai boot com unpackbootimg (já vem no sistema)
+unpackbootimg -i ../boot.img
 
 echo "Substituindo kernel..."
 
-if [ -f kernel/out/arch/arm64/boot/Image.gz-dtb ]; then
-    cp kernel/out/arch/arm64/boot/Image.gz-dtb kernel
-elif [ -f kernel/out/arch/arm64/boot/Image.gz ]; then
-    cp kernel/out/arch/arm64/boot/Image.gz kernel
+if [ -f ../kernel/out/arch/arm64/boot/Image.gz-dtb ]; then
+    cp ../kernel/out/arch/arm64/boot/Image.gz-dtb kernel
+elif [ -f ../kernel/out/arch/arm64/boot/Image.gz ]; then
+    cp ../kernel/out/arch/arm64/boot/Image.gz kernel
 else
-    cp kernel/out/arch/arm64/boot/Image kernel
+    cp ../kernel/out/arch/arm64/boot/Image kernel
 fi
 
-echo "Reempacotando..."
+echo "Reempacotando boot..."
 
-./magiskboot repack boot.img
+mkbootimg \
+  --kernel kernel \
+  --ramdisk boot.img-ramdisk.gz \
+  --cmdline "$(cat boot.img-cmdline)" \
+  --base "$(cat boot.img-base)" \
+  --pagesize "$(cat boot.img-pagesize)" \
+  -o ../droidspaces_boot.img
 
-mv new-boot.img droidspaces_boot.img
+cd ..
 
 echo "PRONTO ✅"
