@@ -10,7 +10,8 @@ export SUBARCH=arm64
 export LLVM=1
 export LLVM_IAS=1
 
-export PATH="$(pwd)/../clang/bin:$PATH"
+# ✅ CAMINHO CORRIGIDO DO CLANG
+export PATH="$(pwd)/../clang/clang-r*/bin:$PATH"
 
 export CC=clang
 export LD=ld.lld
@@ -22,7 +23,7 @@ export STRIP=llvm-strip
 
 mkdir -p out
 
-# ✅ DEFCONFIG CORRETO (sem chute agora)
+# ✅ DEFCONFIG CERTO
 DEFCONFIG_NAME=vendor/gki_defconfig
 
 echo "Usando: $DEFCONFIG_NAME"
