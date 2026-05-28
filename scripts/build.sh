@@ -9,18 +9,13 @@ export SUBARCH=arm64
 
 mkdir -p out
 
-# 🔥 defconfig correto
 DEFCONFIG_NAME=gki_defconfig
 
 echo "Usando: $DEFCONFIG_NAME"
 
-# config inicial
 make O=out $DEFCONFIG_NAME LLVM=1 LLVM_IAS=1
-
-# ajusta config
 make O=out olddefconfig LLVM=1 LLVM_IAS=1
 
-# build
 make -j$(nproc --all) \
     O=out \
     LLVM=1 \
