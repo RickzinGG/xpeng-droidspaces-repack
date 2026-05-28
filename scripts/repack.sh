@@ -6,27 +6,24 @@ echo "Clonando Magisk..."
 
 git clone --depth=1 https://github.com/topjohnwu/Magisk.git magisk
 
-echo "Baixando NDK..."
+echo "Pegando magiskboot pré-compilado..."
 
-curl -L -o ndk.zip https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
-unzip -q ndk.zip
-mv android-ndk-r26b ndk
+# 🔥 usa binário já pronto dentro do repo
+cp magisk/tools/magiskboot magiskboot || {
+    echo "Tentando outro path..."
+    cp magisk/native/out/magiskboot magiskboot || {
+        echo "ERRO: magiskboot não encontrado no repo"
+        exit 1
+    }
+}
 
-export ANDROID_NDK_HOME=$PWD/ndk
-
-echo "Compilando magiskboot..."
-
-cd magisk/native
-
-$ANDROID_NDK_HOME/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk
-
-cd ../../
-
-cp magisk/native/libs/x86_64/magiskboot magiskboot
 chmod +x magiskboot
 
 echo "Testando magiskboot..."
-./magiskboot --help || { echo "Erro no magiskboot"; exit 1; }
+./magiskboot --help >/dev/null || {
+    echo "ERRO: magiskboot inválido"
+    exit 1
+}
 
 echo "Extraindo boot.img..."
 ./magiskboot unpack boot.img
