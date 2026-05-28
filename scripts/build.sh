@@ -2,66 +2,37 @@
 
 set -e
 
-echo "Preparando ferramentas..."
+cd kernel
 
-# 🔥 instala deps básicas
-sudo apt update
-sudo apt install -y git build-essential
+export ARCH=arm64
+export SUBARCH=arm64
 
-# 🔥 se não tiver unpackbootimg, compila
-if ! command -v unpackbootimg &> /dev/null
-then
-    echo "unpackbootimg não encontrado, compilando..."
+mkdir -p out
 
-    git clone https://github.com/anestisb/android-unpackbootimg.git tools_unpack
-    cd tools_unpack
+# 🔥 defconfig correto
+DEFCONFIG_NAME=gki_defconfig
 
-    make
+echo "Usando: $DEFCONFIG_NAME"
 
-    cp unpackbootimg ../
-    cp mkbootimg ../
+# config inicial
+make O=out $DEFCONFIG_NAME LLVM=1 LLVM_IAS=1
 
-    cd ..
-fi
+# ajusta config
+make O=out olddefconfig LLVM=1 LLVM_IAS=1
 
-echo "Extraindo boot.img..."
+# build
+make -j$(nproc --all) \
+    O=out \
+    LLVM=1 \
+    LLVM_IAS=1 \
+    CC="clang --target=aarch64-linux-gnu" \
+    LD=ld.lld \
+    AR=llvm-ar \
+    NM=llvm-nm \
+    OBJCOPY=llvm-objcopy \
+    OBJDUMP=llvm-objdump \
+    STRIP=llvm-strip \
+    KCFLAGS="-Wno-error" \
+    KBUILD_MODPOST_WARN=1
 
-mkdir -p work
-cd work
-
-../unpackbootimg -i ../boot.img
-
-echo "Arquivos extraídos:"
-ls
-
-# detecta nomes automaticamente
-RAMDISK=$(ls *ramdisk* 2>/dev/null | head -n1)
-CMDLINE=$(cat *cmdline*)
-BASE=$(cat *base*)
-PAGESIZE=$(cat *pagesize*)
-
-echo "Ramdisk: $RAMDISK"
-
-echo "Substituindo kernel..."
-
-if [ -f ../kernel/out/arch/arm64/boot/Image.gz-dtb ]; then
-    cp ../kernel/out/arch/arm64/boot/Image.gz-dtb kernel
-elif [ -f ../kernel/out/arch/arm64/boot/Image.gz ]; then
-    cp ../kernel/out/arch/arm64/boot/Image.gz kernel
-else
-    cp ../kernel/out/arch/arm64/boot/Image kernel
-fi
-
-echo "Reempacotando boot..."
-
-../mkbootimg \
-  --kernel kernel \
-  --ramdisk "$RAMDISK" \
-  --cmdline "$CMDLINE" \
-  --base "$BASE" \
-  --pagesize "$PAGESIZE" \
-  -o ../droidspaces_boot.img
-
-cd ..
-
-echo "PRONTO ✅ droidspaces_boot.img gerado"
+echo "BUILD FINALIZADO ✅"
