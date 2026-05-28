@@ -4,8 +4,8 @@ set -e
 
 echo "Baixando magiskboot..."
 
-git clone --depth=1 https://github.com/topjohnwu/Magisk.git magisk
-cp magisk/tools/magiskboot .
+# ✅ baixa binário pronto (funciona 100%)
+curl -L -o magiskboot https://github.com/topjohnwu/Magisk/releases/latest/download/magiskboot
 
 chmod +x magiskboot
 
