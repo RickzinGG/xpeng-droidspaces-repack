@@ -20,9 +20,10 @@ jobs:
           build-essential libelf-dev \
           python3 gcc
 
+    # ✅ CLANG CORRIGIDO (ANDROID OFICIAL)
     - name: Setup Clang
       run: |
-        git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
+        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 clang
 
     - name: Clone Motorola Kernel
       run: |
