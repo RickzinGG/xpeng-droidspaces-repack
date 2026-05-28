@@ -10,8 +10,12 @@ export SUBARCH=arm64
 export LLVM=1
 export LLVM_IAS=1
 
-# ✅ CAMINHO CORRIGIDO DO CLANG
-export PATH="$(pwd)/../clang/clang-r*/bin:$PATH"
+# ✅ PEGA O CAMINHO REAL DO CLANG
+CLANG_PATH=$(find ../clang -type d -name "bin" | head -n 1)
+export PATH="$CLANG_PATH:$PATH"
+
+# ✅ GARANTE QUE ld.lld existe
+ls $CLANG_PATH
 
 export CC=clang
 export LD=ld.lld
@@ -23,7 +27,6 @@ export STRIP=llvm-strip
 
 mkdir -p out
 
-# ✅ DEFCONFIG CERTO
 DEFCONFIG_NAME=vendor/gki_defconfig
 
 echo "Usando: $DEFCONFIG_NAME"
@@ -34,6 +37,7 @@ make O=out olddefconfig
 make -j$(nproc --all) \
     O=out \
     CC=clang \
+    LD=ld.lld \
     LLVM=1 \
     LLVM_IAS=1 \
     KCFLAGS="-Wno-error" \
