@@ -2,10 +2,20 @@
 
 set -e
 
-echo "Baixando magiskboot..."
+echo "Baixando Magisk..."
 
-# ✅ baixa binário pronto (funciona 100%)
-curl -L -o magiskboot https://github.com/topjohnwu/Magisk/releases/latest/download/magiskboot
+git clone --depth=1 https://github.com/topjohnwu/Magisk.git magisk
+
+echo "Compilando magiskboot..."
+
+cd magisk/native/src
+ndk-build
+
+cd ../../..
+
+echo "Pegando magiskboot..."
+
+cp magisk/native/libs/*/magiskboot .
 
 chmod +x magiskboot
 
