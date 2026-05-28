@@ -22,14 +22,8 @@ export STRIP=llvm-strip
 
 mkdir -p out
 
-DEFCONFIG=$(find arch/arm64/configs -name "*xpeng*defconfig" | head -n 1)
-
-if [ -z "$DEFCONFIG" ]; then
-  echo "Defconfig não encontrado"
-  exit 1
-fi
-
-DEFCONFIG_NAME=$(basename $DEFCONFIG)
+# ✅ DEFCONFIG CORRETO (sem chute agora)
+DEFCONFIG_NAME=vendor/gki_defconfig
 
 echo "Usando: $DEFCONFIG_NAME"
 
