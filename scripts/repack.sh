@@ -8,15 +8,17 @@ git clone --depth=1 https://github.com/osm0sis/mkbootimg.git tools
 
 cd tools
 
-echo "Preparando ferramentas..."
+echo "Preparando scripts..."
 
-chmod +x mkbootimg unpackbootimg
+chmod +x mkbootimg.py unpack_bootimg.py
 
 cd ..
 
+mkdir -p unpacked
+
 echo "Extraindo boot.img..."
 
-./tools/unpackbootimg -i boot.img -o unpacked
+python3 tools/unpack_bootimg.py --boot_img boot.img --out unpacked
 
 echo "Substituindo kernel..."
 
@@ -34,12 +36,12 @@ cp "$KERNEL" unpacked/kernel
 
 echo "Recriando boot.img..."
 
-./tools/mkbootimg \
+python3 tools/mkbootimg.py \
   --kernel unpacked/kernel \
-  --ramdisk unpacked/ramdisk.gz \
-  --cmdline "$(cat unpacked/boot.img-cmdline)" \
-  --base $(cat unpacked/boot.img-base) \
-  --pagesize $(cat unpacked/boot.img-pagesize) \
+  --ramdisk unpacked/ramdisk \
+  --cmdline "$(cat unpacked/cmdline)" \
+  --base $(cat unpacked/base) \
+  --pagesize $(cat unpacked/pagesize) \
   --output droidspaces_boot.img
 
 echo "PRONTO ✅"
