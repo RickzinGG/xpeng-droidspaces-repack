@@ -1,1 +1,51 @@
+name: Build Kernel + Repack Boot
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install deps
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          git curl zip unzip bc bison flex \
+          libssl-dev cpio kmod \
+          build-essential libelf-dev \
+          python3 gcc
+
+    - name: Setup Clang
+      run: |
+        git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
+
+    - name: Clone Motorola Kernel
+      run: |
+        git clone --depth=1 \
+        -b MMI-S3RXC32.33-8-25 \
+        https://github.com/MotorolaMobilityLLC/kernel-msm.git kernel
+
+    - name: Download boot.img
+      run: |
+        curl -L -o boot.img "https://github.com/RickzinGG/xpeng-droidspaces-repack/releases/download/Boot.img/boot.img"
+
+    - name: Build kernel
+      run: |
+        chmod +x scripts/build.sh
+        ./scripts/build.sh
+
+    - name: Repack boot.img
+      run: |
+        chmod +x scripts/repack.sh
+        ./scripts/repack.sh
+
+    - name: Upload boot
+      uses: actions/upload-artifact@v4
+      with:
+        name: droidspaces_boot
+        path: droidspaces_boot.img
