@@ -11,7 +11,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install deps + clang correto
+    - name: Install deps + clang
       run: |
         sudo apt update
         sudo apt install -y \
@@ -26,6 +26,11 @@ jobs:
         git clone --depth=1 \
         -b MMI-S3RXC32.33-8-25 \
         https://github.com/MotorolaMobilityLLC/kernel-msm.git kernel
+
+    # 🔥 FIX AUTOMÁTICO DO ERRO
+    - name: Fix kernel bug (qrtr)
+      run: |
+        sed -i 's/extern qrtr_first_msg;/extern int qrtr_first_msg;/g' kernel/kernel/time/sched_clock.c
 
     - name: Download boot.img
       run: |
