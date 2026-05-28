@@ -11,7 +11,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install deps + clang
+    - name: Install deps + clang + NDK
       run: |
         sudo apt update
         sudo apt install -y \
@@ -19,7 +19,8 @@ jobs:
           libssl-dev cpio kmod \
           build-essential libelf-dev \
           python3 gcc \
-          clang lld llvm
+          clang lld llvm \
+          android-sdk
 
     - name: Clone Motorola Kernel
       run: |
@@ -27,8 +28,8 @@ jobs:
         -b MMI-S3RXC32.33-8-25 \
         https://github.com/MotorolaMobilityLLC/kernel-msm.git kernel
 
-    # 🔥 FIX AUTOMÁTICO DO ERRO
-    - name: Fix kernel bug (qrtr)
+    # 🔥 FIX DO ERRO qrtr
+    - name: Fix kernel bug
       run: |
         sed -i 's/extern qrtr_first_msg;/extern int qrtr_first_msg;/g' kernel/kernel/time/sched_clock.c
 
