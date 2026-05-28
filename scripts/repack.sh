@@ -2,20 +2,17 @@
 
 set -e
 
-echo "Baixando Magisk APK (fixo)..."
+echo "Baixando magiskboot compatível..."
 
-# 🔥 link fixo (não quebra igual latest)
-curl -L -o magisk.apk https://github.com/topjohnwu/Magisk/releases/download/v30.7/Magisk-v30.7.apk
+# 🔥 binário já pronto e compatível com GitHub runner
+curl -L -o magiskboot https://raw.githubusercontent.com/affggh/magiskboot_builds/main/magiskboot
 
-echo "Extraindo magiskboot..."
-
-unzip -j magisk.apk "lib/x86_64/libmagiskboot.so" -d .
-
-mv libmagiskboot.so magiskboot
 chmod +x magiskboot
 
-echo "Extraindo boot.img..."
+echo "Testando magiskboot..."
+./magiskboot --help || { echo "magiskboot quebrado"; exit 1; }
 
+echo "Extraindo boot.img..."
 ./magiskboot unpack boot.img
 
 echo "Substituindo kernel..."
@@ -29,9 +26,8 @@ else
 fi
 
 echo "Reempacotando..."
-
 ./magiskboot repack boot.img
 
 mv new-boot.img droidspaces_boot.img
 
-echo "PRONTO ✅ droidspaces_boot.img gerado"
+echo "PRONTO ✅"
