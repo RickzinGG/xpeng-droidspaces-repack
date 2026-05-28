@@ -11,19 +11,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Install deps
+    - name: Install deps + clang correto
       run: |
         sudo apt update
         sudo apt install -y \
           git curl zip unzip bc bison flex \
           libssl-dev cpio kmod \
           build-essential libelf-dev \
-          python3 gcc
-
-    # ✅ CLANG CORRIGIDO (ANDROID OFICIAL)
-    - name: Setup Clang
-      run: |
-        git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86 clang
+          python3 gcc \
+          clang lld llvm
 
     - name: Clone Motorola Kernel
       run: |
