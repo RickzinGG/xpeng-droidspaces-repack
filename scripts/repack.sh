@@ -2,20 +2,10 @@
 
 set -e
 
-echo "Baixando Magisk..."
+echo "Baixando magiskboot..."
 
-git clone --depth=1 https://github.com/topjohnwu/Magisk.git magisk
-
-echo "Compilando magiskboot..."
-
-cd magisk/native/src
-ndk-build
-
-cd ../../..
-
-echo "Pegando magiskboot..."
-
-cp magisk/native/libs/*/magiskboot .
+# ✅ baixa binário correto (fixo)
+curl -L -o magiskboot https://raw.githubusercontent.com/chenxiaolong/DualBootPatcher/master/prebuilts/magiskboot/x86_64/magiskboot
 
 chmod +x magiskboot
 
