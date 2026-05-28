@@ -1,53 +1,31 @@
-name: Build Kernel + Repack Boot
+#!/usr/bin/env bash
 
-on:
-  workflow_dispatch:
+set -e
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+cd kernel
 
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+export ARCH=arm64
+export SUBARCH=arm64
 
-    - name: Install deps + clang
-      run: |
-        sudo apt update
-        sudo apt install -y \
-          git curl zip unzip bc bison flex \
-          libssl-dev cpio kmod \
-          build-essential libelf-dev \
-          python3 gcc \
-          clang lld llvm
+mkdir -p out
 
-    - name: Clone Motorola Kernel
-      run: |
-        git clone --depth=1 \
-        -b MMI-S3RXC32.33-8-25 \
-        https://github.com/MotorolaMobilityLLC/kernel-msm.git kernel
+DEFCONFIG_NAME=gki_defconfig
 
-    # 🔥 FIX AUTOMÁTICO DO ERRO
-    - name: Fix kernel bug (qrtr)
-      run: |
-        sed -i 's/extern qrtr_first_msg;/extern int qrtr_first_msg;/g' kernel/kernel/time/sched_clock.c
+echo "Usando: $DEFCONFIG_NAME"
 
-    - name: Download boot.img
-      run: |
-        curl -L -o boot.img "https://github.com/RickzinGG/xpeng-droidspaces-repack/releases/download/Boot.img/boot.img"
+make O=out $DEFCONFIG_NAME LLVM=1 LLVM_IAS=1
+make O=out olddefconfig LLVM=1 LLVM_IAS=1
 
-    - name: Build kernel
-      run: |
-        chmod +x scripts/build.sh
-        ./scripts/build.sh
-
-    - name: Repack boot.img
-      run: |
-        chmod +x scripts/repack.sh
-        ./scripts/repack.sh
-
-    - name: Upload boot
-      uses: actions/upload-artifact@v4
-      with:
-        name: droidspaces_boot
-        path: droidspaces_boot.img
+make -j$(nproc --all) \
+    O=out \
+    LLVM=1 \
+    LLVM_IAS=1 \
+    CC="clang --target=aarch64-linux-gnu" \
+    LD=ld.lld \
+    AR=llvm-ar \
+    NM=llvm-nm \
+    OBJCOPY=llvm-objcopy \
+    OBJDUMP=llvm-objdump \
+    STRIP=llvm-strip \
+    KCFLAGS="-Wno-error" \
+    KBUILD_MODPOST_WARN=1
