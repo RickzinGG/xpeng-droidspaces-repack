@@ -4,13 +4,13 @@ set -e
 
 echo "Clonando ferramentas AOSP..."
 
-git clone --depth=1 https://github.com/osm0sis/mkbootimg_tools.git tools
+git clone --depth=1 https://github.com/osm0sis/mkbootimg.git tools
 
 cd tools
 
-echo "Compilando ferramentas..."
+echo "Preparando ferramentas..."
 
-make
+chmod +x mkbootimg unpackbootimg
 
 cd ..
 
