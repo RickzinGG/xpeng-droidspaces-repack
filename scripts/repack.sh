@@ -2,17 +2,15 @@
 
 set -e
 
-echo "Baixando Magisk APK oficial..."
+echo "Baixando Magisk APK (fixo)..."
 
-# 🔥 baixa APK da release mais recente
-curl -L -o magisk.apk https://github.com/topjohnwu/Magisk/releases/latest/download/Magisk.apk
+# 🔥 link fixo (não quebra igual latest)
+curl -L -o magisk.apk https://github.com/topjohnwu/Magisk/releases/download/v30.7/Magisk-v30.7.apk
 
 echo "Extraindo magiskboot..."
 
-# extrai o binário correto
 unzip -j magisk.apk "lib/x86_64/libmagiskboot.so" -d .
 
-# renomeia
 mv libmagiskboot.so magiskboot
 chmod +x magiskboot
 
