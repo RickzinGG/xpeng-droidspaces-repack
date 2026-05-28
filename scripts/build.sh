@@ -13,15 +13,16 @@ DEFCONFIG_NAME=gki_defconfig
 
 echo "Usando: $DEFCONFIG_NAME"
 
-# ✅ agora usando clang do sistema (já tem ld.lld)
+# ✅ DEFCONFIG com LLVM
 make O=out $DEFCONFIG_NAME LLVM=1 LLVM_IAS=1
 make O=out olddefconfig LLVM=1 LLVM_IAS=1
 
+# 💥 CORREÇÃO PRINCIPAL AQUI
 make -j$(nproc --all) \
     O=out \
     LLVM=1 \
     LLVM_IAS=1 \
-    CC=clang \
+    CC="clang --target=aarch64-linux-gnu" \
     LD=ld.lld \
     AR=llvm-ar \
     NM=llvm-nm \
